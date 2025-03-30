@@ -9,14 +9,14 @@ const TableView = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/tasks'); // Make sure this matches your server URL
+        const response = await fetch('http://localhost:8000/api/tasks');
         const data = await response.json();
         setTasks(data);
       } catch (error) {
         setError('Failed to fetch tasks');
         console.error(error);
       } finally {
-        setLoading(false); // Always set loading to false after data fetch
+        setLoading(false);
       }
     };
 
@@ -24,11 +24,11 @@ const TableView = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>; // Display loading message while fetching
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return <div>{error}</div>; // Display error message if the request fails
+    return <div>{error}</div>;
   }
 
   return (
