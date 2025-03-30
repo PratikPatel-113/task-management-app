@@ -1,34 +1,19 @@
 import React, { useEffect, useState } from 'react';
+import { Drawer, Button } from '@mui/material';
 import './TableView.css';
+import useDataStore from '../../store/useDataStore';
 
 const TableView = () => {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const tasks = useDataStore((state) => state.tasks);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [filteredTasks, setFilteredTasks] = useState([]);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/tasks');
-        const data = await response.json();
-        setTasks(data);
-      } catch (error) {
-        setError('Failed to fetch tasks');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, []);
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     filterTasks();
-  }, [searchQuery, selectedStatus, tasks]);
+  }, [searchQuery, selectedStatus]);
 
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
@@ -37,6 +22,16 @@ const TableView = () => {
 
   const handleFilterStatus = (event) => {
     setSelectedStatus(event.target.value);
+  };
+
+  const handleRowClick = (task) => {
+    setSelectedTask(task);
+    setOpenDrawer(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setOpenDrawer(false);
+    setSelectedTask(null);
   };
 
   const filterTasks = () => {
@@ -60,14 +55,6 @@ const TableView = () => {
 
     setFilteredTasks(filtered);
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
 
   return (
     <div className="table-container">
@@ -104,7 +91,7 @@ const TableView = () => {
         </thead>
         <tbody>
           {filteredTasks.map((task, index) => (
-            <tr key={task.id}>
+            <tr key={task.id} onClick={() => handleRowClick(task)}>
               <td>{index + 1}</td>
               <td>{task.name}</td>
               <td>{task.id}</td>
@@ -116,6 +103,51 @@ const TableView = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Drawer for Task Details */}
+      <Drawer
+        anchor="left"
+        open={openDrawer}
+        onClose={handleCloseDrawer}
+      >
+        <div style={{ width: 400, padding: '20px' }}>
+          {/* Close Button */}
+          <Button
+            variant="outlined"
+            onClick={handleCloseDrawer}
+            style={{ marginBottom: '20px', float: 'right' }}
+          >
+            Close
+          </Button>
+          {selectedTask && (
+            <>
+              <h1>Task Details</h1>
+              <div><strong>Task Name:</strong> {selectedTask.name}</div>
+              <div><strong>Task ID:</strong> {selectedTask.id}</div>
+              <div><strong>Description:</strong> {selectedTask.description}</div>
+              <div><strong>Assignee:</strong> {selectedTask.assignee}</div>
+              <div><strong>Status:</strong> {selectedTask.status}</div>
+              <div><strong>Due Date:</strong> {selectedTask.dueDate}</div>
+
+              {/* Comments Section */}
+              <div style={{ marginTop: '20px' }}><strong>Comments:</strong></div>
+              <textarea
+                rows={5}
+                placeholder="No comments available."
+                style={{
+                  resize: 'none',
+                  marginTop: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  padding: '10px',
+                  fontSize: '14px'
+                }}
+                disabled
+              />
+            </>
+          )}
+        </div>
+      </Drawer>
     </div>
   );
 }

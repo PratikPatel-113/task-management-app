@@ -1,30 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import React from 'react';
+import { Box, Typography } from '@mui/material';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell, Legend as PieLegend, Tooltip as PieTooltip } from 'recharts';
+import useDataStore from '../../store/useDataStore';
 
 const Dashboard = () => {
-    const [tasks, setTasks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const tasks = useDataStore((state) => state.tasks);
     const pieChartColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#ff6666'];
-
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const response = await fetch('http://localhost:8000/api/tasks');
-                const data = await response.json();
-                setTasks(data);
-            } catch (error) {
-                setError('Failed to fetch tasks');
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchTasks();
-    }, []);
 
     // Helper function to format date
     const formatDate = (date) => new Date(date).toLocaleDateString();
@@ -96,18 +78,6 @@ const Dashboard = () => {
             count
         }));
     };
-
-    if (loading) {
-        return (
-            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return <div>{error}</div>;
-    }
 
     return (
         <Box padding={3}>
