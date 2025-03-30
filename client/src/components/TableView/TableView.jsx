@@ -5,6 +5,9 @@ const TableView = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [filteredTasks, setFilteredTasks] = useState([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -23,6 +26,41 @@ const TableView = () => {
     fetchTasks();
   }, []);
 
+  useEffect(() => {
+    filterTasks();
+  }, [searchQuery, selectedStatus, tasks]);
+
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+  }
+
+  const handleFilterStatus = (event) => {
+    setSelectedStatus(event.target.value);
+  };
+
+  const filterTasks = () => {
+    let filtered = tasks;
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter((task) => {
+        return (
+          task.name.toLowerCase().includes(searchQuery) ||
+          task.description.toLowerCase().includes(searchQuery) ||
+          task.assignee.toLowerCase().includes(searchQuery)
+        );
+      });
+    }
+
+    // Status filter
+    if (selectedStatus && selectedStatus !== 'All') {
+      filtered = filtered.filter((task) => task.status === selectedStatus);
+    }
+
+    setFilteredTasks(filtered);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -34,6 +72,22 @@ const TableView = () => {
   return (
     <div className="table-container">
       <h1>Task Table View</h1>
+
+      <div className="filters" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
+        <select value={selectedStatus} onChange={handleFilterStatus}>
+          <option value="All">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+          <option value="Overdue">Overdue</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Search tasks"
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+      </div>
 
       {/* Table component */}
       <table className="table">
@@ -49,7 +103,7 @@ const TableView = () => {
           </tr>
         </thead>
         <tbody>
-          {tasks.map((task, index) => (
+          {filteredTasks.map((task, index) => (
             <tr key={task.id}>
               <td>{index + 1}</td>
               <td>{task.name}</td>
