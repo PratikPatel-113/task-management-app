@@ -80,11 +80,11 @@ const Dashboard = () => {
 
             if (estimation <= 1) {
                 ranges['0-1 hours']++;
-            } else if (estimation <= 3) {
+            } else if (estimation > 1 && estimation <= 3) {
                 ranges['1-3 hours']++;
-            } else if (estimation <= 5) {
+            } else if (estimation > 3 && estimation <= 5) {
                 ranges['3-5 hours']++;
-            } else if (estimation <= 10) {
+            } else if (estimation > 5 && estimation <= 10) {
                 ranges['5-10 hours']++;
             } else {
                 ranges['10+ hours']++;
@@ -115,76 +115,78 @@ const Dashboard = () => {
                 Dashboard
             </Typography>
 
-            {/* Graph 1: Completed Tasks Per Day */}
-            <Box marginBottom={4}>
-                <Typography variant="h6" align="center" gutterBottom>
-                    Completed Tasks Per Day
-                </Typography>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={completedPerDay()}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="linear" dataKey="completedTasks" stroke="#8884d8" />
-                    </LineChart>
-                </ResponsiveContainer>
-            </Box>
-
-            {/* Graph 2: Due Date Per Day */}
-            <Box marginBottom={4}>
-                <Typography variant="h6" align="center" gutterBottom>
-                    Tasks Due Per Day
-                </Typography>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={dueDatePerDay()}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="linear" dataKey="tasksDue" stroke="#82ca9d" />
-                    </LineChart>
-                </ResponsiveContainer>
-            </Box>
-
-            {/* Graph 3: Estimation Hours Breakdown (Pie Chart) */}
-            <Box marginBottom={4} display="flex" justifyContent="space-between" alignItems="center">
-                <Box width="70%">
+            {/* Graphs in a Row with Frames */}
+            <Box display="flex" justifyContent="space-between" flexWrap="wrap">
+                {/* Graph 1: Completed Tasks Per Day */}
+                <Box width="30%" marginBottom={4} padding={2} border={1} borderRadius={2} borderColor="gray.300">
                     <Typography variant="h6" align="center" gutterBottom>
-                        Estimation Hours Breakdown
+                        Completed Tasks Per Day
                     </Typography>
                     <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie
-                                data={estimationHoursBreakdown()}
-                                dataKey="count"
-                                nameKey="range"
-                                outerRadius={120}
-                                fill="#8884d8"
-                                label
-                            >
-                                {estimationHoursBreakdown().map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={pieChartColors[index]} />
-                                ))}
-                            </Pie>
-                            <PieTooltip />
-                        </PieChart>
+                        <LineChart data={completedPerDay()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="linear" dataKey="completedTasks" stroke="#8884d8" />
+                        </LineChart>
                     </ResponsiveContainer>
                 </Box>
 
-                {/* Pie Chart Ranges */}
-                <Box width="25%" padding={2}>
+                {/* Graph 2: Due Date Per Day */}
+                <Box width="30%" marginBottom={4} padding={2} border={1} borderRadius={2} borderColor="gray.300">
                     <Typography variant="h6" align="center" gutterBottom>
-                        Task Duration Ranges
+                        Tasks Due Per Day
                     </Typography>
-                    <Box>
-                        <Typography variant="body1">0-1 hours: {estimationHoursBreakdown().find(item => item.range === '0-1 hours')?.count || 0}</Typography>
-                        <Typography variant="body1">1-3 hours: {estimationHoursBreakdown().find(item => item.range === '1-3 hours')?.count || 0}</Typography>
-                        <Typography variant="body1">3-5 hours: {estimationHoursBreakdown().find(item => item.range === '3-5 hours')?.count || 0}</Typography>
-                        <Typography variant="body1">5-10 hours: {estimationHoursBreakdown().find(item => item.range === '5-10 hours')?.count || 0}</Typography>
-                        <Typography variant="body1">10+ hours: {estimationHoursBreakdown().find(item => item.range === '10+ hours')?.count || 0}</Typography>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={dueDatePerDay()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="linear" dataKey="tasksDue" stroke="#82ca9d" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Box>
+
+                {/* Graph 3: Estimation Hours Breakdown (Pie Chart) */}
+                <Box width="30%" marginBottom={4} padding={2} border={1} borderRadius={2} borderColor="gray.300" display="flex" justifyContent="space-between" alignItems="center">
+                    <Box width="70%">
+                        <Typography variant="h6" align="center" gutterBottom>
+                            Estimation Hours Breakdown
+                        </Typography>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={estimationHoursBreakdown()}
+                                    dataKey="count"
+                                    nameKey="range"
+                                    outerRadius={120}
+                                    fill="#8884d8"
+                                >
+                                    {estimationHoursBreakdown().map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={pieChartColors[index]} />
+                                    ))}
+                                </Pie>
+                                <PieTooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </Box>
+
+                    {/* Pie Chart Ranges */}
+                    <Box width="25%" padding={2}>
+                        <Typography variant="h6" align="center" gutterBottom>
+                            Task Duration Ranges
+                        </Typography>
+                        <Box>
+                            <Typography variant="body1">0-1 hours: {estimationHoursBreakdown().find(item => item.range === '0-1 hours')?.count || 0}</Typography>
+                            <Typography variant="body1">1-3 hours: {estimationHoursBreakdown().find(item => item.range === '1-3 hours')?.count || 0}</Typography>
+                            <Typography variant="body1">3-5 hours: {estimationHoursBreakdown().find(item => item.range === '3-5 hours')?.count || 0}</Typography>
+                            <Typography variant="body1">5-10 hours: {estimationHoursBreakdown().find(item => item.range === '5-10 hours')?.count || 0}</Typography>
+                            <Typography variant="body1">10+ hours: {estimationHoursBreakdown().find(item => item.range === '10+ hours')?.count || 0}</Typography>
+                        </Box>
                     </Box>
                 </Box>
             </Box>
