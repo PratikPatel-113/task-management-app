@@ -1,9 +1,20 @@
 import { create } from 'zustand';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const useDataStore = create((set, get) => ({
     tasks: [],
     searchQuery: '',
     selectedStatus: 'All',
+
+    fetchTasks: async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/tasks`);
+            const data = await response.json();
+            set({ tasks: data });
+        } catch (error) {
+            console.error("Failed to fetch tasks", error);
+        }
+    },
 
     setTasks: (tasks) => set({ tasks }),
     setSearchQuery: (query) => set({ searchQuery: query.toLowerCase() }),

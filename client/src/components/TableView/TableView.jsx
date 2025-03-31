@@ -1,32 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, Button, Modal } from '@mui/material';
-import './TableView.css';
+import { Button, Modal } from '@mui/material';
 import useDataStore from '../../store/useDataStore';
 import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
-const defaultColumns = [
-  { key: 'rowNo', label: 'Row No.', visible: true },
-  { key: 'name', label: 'Name', visible: true },
-  { key: 'description', label: 'Description', visible: true },
-  { key: 'id', label: 'ID', visible: true },
-  { key: 'assignee', label: 'Assignee', visible: true },
-  { key: 'status', label: 'Status', visible: true },
-  { key: 'dueDate', label: 'Due date', visible: true },
-  { key: 'estimationHours', label: 'Estimation hours', visible: false },
-  { key: 'remarks', label: 'Remarks', visible: false }
-];
-
-const loadColumnsConfig = () => {
-  const savedConfig = localStorage.getItem('tableColumns');
-  return savedConfig ? JSON.parse(savedConfig) : defaultColumns;
-};
-
-const saveColumnsConfig = (columns) => {
-  localStorage.setItem('tableColumns', JSON.stringify(columns));
-};
+import { loadColumnsConfig, saveColumnsConfig } from '../../utils/columnUtils'
+import Filters from './Filters';
+import TableComponent from './TableComponent';
+import './TableView.css';
+import TaskDetailsDrawer from './TaskDetailsDrawer';
 
 // Sortable Column Item Component for the right panel
 const SortableColumnItem = ({ column }) => {
@@ -59,14 +42,7 @@ const SortableColumnItem = ({ column }) => {
 };
 
 const TableView = () => {
-  const {
-    searchQuery,
-    setSearchQuery,
-    selectedStatus,
-    setSelectedStatus,
-    getFilteredTasks
-  } = useDataStore();
-
+  const { getFilteredTasks } = useDataStore();
   const [openDrawer, setOpenDrawer] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [columns, setColumns] = useState(loadColumnsConfig);
@@ -98,18 +74,6 @@ const TableView = () => {
     setVisibleColumns(visible);
   }, [tempColumns]);
 
-  const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleFilterStatus = (event) => {
-    setSelectedStatus(event.target.value);
-  };
-
-  const handleRowClick = (task) => {
-    setSelectedTask(task);
-    setOpenDrawer(true);
-  };
 
   const handleCloseDrawer = () => {
     setOpenDrawer(false);
@@ -134,10 +98,6 @@ const TableView = () => {
     setModalOpen(false);
   };
 
-  const openColumnModal = () => {
-    setTempColumns([...columns]);
-    setModalOpen(true);
-  };
 
   // Handle column reordering
   const handleDragEnd = (event) => {
@@ -179,88 +139,14 @@ const TableView = () => {
     <div className="table-container">
       <h1>Task Table View</h1>
 
-      <div className="filters" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
-        <select value={selectedStatus} onChange={handleFilterStatus}>
-          <option value="All">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-          <option value="Overdue">Overdue</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Search tasks"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-
-        <button variant="outlined" onClick={openColumnModal}>Edit Columns</button>
-      </div>
-
-      {/* Table component */}
-      <table className="table">
-        <thead>
-          <tr>
-            {columns.filter(col => col.visible).map((col) => (
-              <th key={col.key}>{col.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {filteredTasks.map((task, index) => (
-            <tr key={task.id} onClick={() => handleRowClick(task)}>
-              {columns.filter(col => col.visible).map((col) => (
-                <td key={col.key}>{col.key === 'rowNo' ? index + 1 : task[col.key]}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Drawer for Task Details */}
-      <Drawer
-        anchor="left"
-        open={openDrawer}
-        onClose={handleCloseDrawer}
-      >
-        <div style={{ width: 400, padding: '20px' }}>
-          {/* Close Button */}
-          <Button
-            variant="outlined"
-            onClick={handleCloseDrawer}
-            style={{ marginBottom: '20px', float: 'right' }}
-          >
-            Close
-          </Button>
-          {selectedTask && (
-            <>
-              <h1>Task Details</h1>
-              <div><strong>Task Name:</strong> {selectedTask.name}</div>
-              <div><strong>Task ID:</strong> {selectedTask.id}</div>
-              <div><strong>Description:</strong> {selectedTask.description}</div>
-              <div><strong>Assignee:</strong> {selectedTask.assignee}</div>
-              <div><strong>Status:</strong> {selectedTask.status}</div>
-              <div><strong>Due Date:</strong> {selectedTask.dueDate}</div>
-
-              {/* Comments Section */}
-              <div style={{ marginTop: '20px' }}><strong>Comments:</strong></div>
-              <textarea
-                rows={5}
-                placeholder="No comments available."
-                style={{
-                  resize: 'none',
-                  marginTop: '10px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                  padding: '10px',
-                  fontSize: '14px'
-                }}
-                disabled
-              />
-            </>
-          )}
-        </div>
-      </Drawer>
+      <Filters setModalOpen={setModalOpen} />
+      <TableComponent
+        columns={columns}
+        filteredTasks={filteredTasks}
+        setSelectedTask={setSelectedTask}
+        setOpenDrawer={setOpenDrawer}
+      />
+      <TaskDetailsDrawer open={openDrawer} onClose={handleCloseDrawer} task={selectedTask} />
 
       {/* Modal for Column Selection with Drag & Drop */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
@@ -296,7 +182,6 @@ const TableView = () => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {/* Left side - Column checkboxes */}
             <div style={{ width: '50%', paddingRight: '15px' }}>
               {tempColumns.map((column) => (
                 <div key={column.key} style={{
@@ -326,7 +211,6 @@ const TableView = () => {
               ))}
             </div>
 
-            {/* Right side - Draggable column order */}
             <div style={{
               width: '50%',
               paddingLeft: '15px',

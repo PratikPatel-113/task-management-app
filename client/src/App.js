@@ -7,12 +7,14 @@ import { useEffect, useState } from 'react';
 import { getTheme } from './theme/theme';
 import Brightness4Icon from '@mui/icons-material/Brightness4'; // Moon icon
 import Brightness7Icon from '@mui/icons-material/Brightness7'; // Sun icon
+import HomePage from './components/HomePageView/HomePage';
+import { CircularProgress, Box } from "@mui/material";
 import './App.css';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const setTasks = useDataStore((state) => state.setTasks);
+  const { tasks, fetchTasks } = useDataStore();
   const [themeMode, setThemeMode] = useState(() => {
     return localStorage.getItem('themeMode') || 'light';
   });
@@ -22,20 +24,11 @@ const App = () => {
   }, [themeMode]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/tasks');
-        const data = await response.json();
-        setTasks(data);
-      } catch (error) {
-        setError('Failed to fetch tasks');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
+    if (tasks.length === 0) {
+      fetchTasks().then(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -43,11 +36,35 @@ const App = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress size={60} />
+      </Box>
+    );
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "1.5rem",
+          color: "red",
+        }}
+      >
+        {error}
+      </div>
+    );
   }
 
   return (
@@ -68,7 +85,7 @@ const App = () => {
         </div>
 
         <Routes>
-          <Route path="/" element={<h1 style={{ textAlign: 'center' }}> This is Home Page</h1>} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/table" element={<TableView />} />
         </Routes>
