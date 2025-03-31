@@ -3,16 +3,25 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const useDataStore = create((set, get) => ({
     tasks: [],
+    page: 1,
+    hasMore: true,
     searchQuery: '',
     selectedStatus: 'All',
 
     fetchTasks: async () => {
+        const { page, tasks } = get();
+
         try {
-            const response = await fetch(`${API_BASE_URL}/tasks`);
+            const response = await fetch(`http://localhost:8000/api/tasks?page=${page}&limit=10`);
             const data = await response.json();
-            set({ tasks: data });
+
+            set({
+                tasks: [...tasks, ...data.tasks],
+                page: page + 1,
+                hasMore: data.hasMore,
+            });
         } catch (error) {
-            console.error("Failed to fetch tasks", error);
+            console.error('Error fetching tasks:', error);
         }
     },
 

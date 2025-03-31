@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Modal } from '@mui/material';
 import useDataStore from '../../store/useDataStore';
 import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -8,8 +8,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { loadColumnsConfig, saveColumnsConfig } from '../../utils/columnUtils'
 import Filters from './Filters';
 import TableComponent from './TableComponent';
-import './TableView.css';
 import TaskDetailsDrawer from './TaskDetailsDrawer';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import './TableView.css';
 
 // Sortable Column Item Component for the right panel
 const SortableColumnItem = ({ column }) => {
@@ -42,16 +43,35 @@ const SortableColumnItem = ({ column }) => {
 };
 
 const TableView = () => {
-  const { getFilteredTasks } = useDataStore();
+  const { getFilteredTasks, fetchTasks, hasMore } = useDataStore();
   const [openDrawer, setOpenDrawer] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [columns, setColumns] = useState(loadColumnsConfig);
   const [modalOpen, setModalOpen] = useState(false);
   const [tempColumns, setTempColumns] = useState(columns);
   const [visibleColumns, setVisibleColumns] = useState([]);
+  const tableRef = useRef(null);
+  const drawerRef = useRef(null);
+  const modalRef = useRef(null);
 
   // Get filtered tasks from the store
   const filteredTasks = getFilteredTasks();
+
+  useEffect(() => {
+    fetchTasks(); // Load initial data
+  }, []);
+
+  useEffect(() => {
+    if (openDrawer) {
+      drawerRef.current?.focus();
+    }
+  }, [openDrawer]);
+
+  useEffect(() => {
+    if (modalOpen) {
+      modalRef.current?.focus();
+    }
+  }, [modalOpen]);
 
   // Initialize sensors for drag and drop
   const sensors = useSensors(
@@ -78,6 +98,7 @@ const TableView = () => {
   const handleCloseDrawer = () => {
     setOpenDrawer(false);
     setSelectedTask(null);
+    tableRef.current?.focus(); // Return focus to table
   };
 
   const toggleColumnVisibility = (key) => {
@@ -140,25 +161,52 @@ const TableView = () => {
       <h1>Task Table View</h1>
 
       <Filters setModalOpen={setModalOpen} />
-      <TableComponent
-        columns={columns}
-        filteredTasks={filteredTasks}
-        setSelectedTask={setSelectedTask}
-        setOpenDrawer={setOpenDrawer}
-      />
-      <TaskDetailsDrawer open={openDrawer} onClose={handleCloseDrawer} task={selectedTask} />
+
+      <InfiniteScroll
+        dataLength={filteredTasks.length}
+        next={fetchTasks}
+        hasMore={hasMore}
+        loader={<h4>Loading more tasks...</h4>}
+        endMessage={<p>No more tasks to load.</p>}
+      >
+        <TableComponent
+          columns={columns}
+          filteredTasks={filteredTasks}
+          setSelectedTask={setSelectedTask}
+          setOpenDrawer={setOpenDrawer}
+        />
+      </InfiniteScroll>
+
+      <TaskDetailsDrawer
+        open={openDrawer}
+        onClose={handleCloseDrawer}
+        task={selectedTask}
+        ref={drawerRef}
+        role="dialog"
+        aria-labelledby="task-details-title" />
 
       {/* Modal for Column Selection with Drag & Drop */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <div className="modal-content" style={{
-          backgroundColor: '#fff',
-          padding: '20px',
-          borderRadius: '8px',
-          width: '600px',
-          margin: '5% auto',
-          outline: 'none',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-        }}>
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        aria-labelledby="column-selection-title"
+        aria-describedby="column-selection-description"
+      >
+        <div
+          className="modal-content"
+          ref={modalRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          style={{
+            backgroundColor: '#fff',
+            padding: '20px',
+            borderRadius: '8px',
+            width: '600px',
+            margin: '5% auto',
+            outline: 'none',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+          }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',

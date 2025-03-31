@@ -34,9 +34,30 @@ const tasks = [
     { id: 20, name: 'Update social media', description: 'Post updates on company social media accounts', assignee: 'Olivia Davis', status: 'Completed', dueDate: '2025-04-02', estimatedHours: 1 }
 ];
 
+// Generate more tasks dynamically till id 50
+for (let i = 21; i <= 1000; i++) {
+    tasks.push({
+        id: i,
+        name: `Task ${i}`,
+        description: `Description for task ${i}`,
+        assignee: `Assignee ${i}`,
+        status: ['Pending', 'Completed', 'Overdue'][i % 3],
+        dueDate: `2025-04-${String(i % 30 + 1).padStart(2, '0')}`,
+        estimatedHours: (i % 8) + 1
+    });
+}
+
 // Set up a GET endpoint to fetch tasks
 app.get('/api/tasks', (req, res) => {
-    res.json(tasks); // Respond with the dummy tasks data as JSON
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    const paginatedTasks = tasks.slice(startIndex, endIndex);
+    const hasMore = endIndex < tasks.length;
+
+    res.json({ tasks: paginatedTasks, hasMore });
 });
 
 // Start the server
