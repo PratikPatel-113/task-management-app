@@ -48,25 +48,13 @@ const Dashboard = () => {
             ) : (
                 <Box display="flex" justifyContent="space-between" flexWrap="wrap">
                     {/* Graph 1: Completed Tasks Per Day */}
-                    {completedTasksData.length ? (
-                        <CompletedTasksChart data={completedTasksData} />
-                    ) : (
-                        <Typography>No completed tasks data available.</Typography>
-                    )}
+                    <CompletedTasksChart data={completedTasksData.length ? completedTasksData : [{ date: '', count: 0 }]} />
 
                     {/* Graph 2: Due Date Per Day */}
-                    {dueTasksData.length ? (
-                        <DueTasksChart data={dueTasksData} />
-                    ) : (
-                        <Typography>No due tasks data available.</Typography>
-                    )}
+                    <DueTasksChart data={dueTasksData.length ? dueTasksData : [{ date: '', count: 0 }]} />
 
                     {/* Graph 3: Estimation Hours Breakdown (Pie Chart) */}
-                    {estimationHoursData.length ? (
-                        <EstimationHoursChart data={estimationHoursData} colors={pieChartColors} />
-                    ) : (
-                        <Typography>No estimation hours data available.</Typography>
-                    )}
+                    <EstimationHoursChart data={estimationHoursData.length ? estimationHoursData : [{ name: 'No Data', value: 1 }]} colors={pieChartColors} />
                 </Box>
             )}
         </Box>

@@ -12,7 +12,7 @@ const useDataStore = create((set, get) => ({
         const { page, tasks } = get();
 
         try {
-            const response = await fetch(`http://localhost:8000/api/tasks?page=${page}&limit=10`);
+            const response = await fetch(`${API_BASE_URL}/tasks?page=${page}&limit=10`);
             const data = await response.json();
 
             set({
