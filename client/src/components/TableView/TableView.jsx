@@ -43,7 +43,7 @@ const SortableColumnItem = ({ column }) => {
 };
 
 const TableView = () => {
-  const { getFilteredTasks, fetchTasks, hasMore } = useDataStore();
+  const { getFilteredTasks, fetchTasks, hasMore, searchQuery } = useDataStore();
   const [openDrawer, setOpenDrawer] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [columns, setColumns] = useState(loadColumnsConfig);
@@ -164,8 +164,10 @@ const TableView = () => {
 
       <InfiniteScroll
         dataLength={filteredTasks.length}
-        next={fetchTasks}
-        hasMore={hasMore}
+        next={() => {
+          if (!searchQuery) fetchTasks(); //Fetch only if NOT searching
+        }}
+        hasMore={!searchQuery && hasMore} //Ensure it doesn’t load more when searching
         loader={<h4>Loading more tasks...</h4>}
         endMessage={<p>No more tasks to load.</p>}
       >
