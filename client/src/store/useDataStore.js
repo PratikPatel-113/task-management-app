@@ -10,9 +10,9 @@ const useDataStore = create((set, get) => ({
 
     fetchTasks: async () => {
         const { page, tasks } = get();
-
+        const url = `${API_BASE_URL}/tasks?page=${page}&limit=10`;
         try {
-            const response = await fetch(`${API_BASE_URL}/tasks?page=${page}&limit=10`);
+            const response = await fetch(url);
             const data = await response.json();
 
             set({
