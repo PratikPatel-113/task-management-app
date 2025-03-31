@@ -59,16 +59,23 @@ const SortableColumnItem = ({ column }) => {
 };
 
 const TableView = () => {
-  const tasks = useDataStore((state) => state.tasks);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('All');
-  const [filteredTasks, setFilteredTasks] = useState([]);
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedStatus,
+    setSelectedStatus,
+    getFilteredTasks
+  } = useDataStore();
+
   const [openDrawer, setOpenDrawer] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [columns, setColumns] = useState(loadColumnsConfig);
   const [modalOpen, setModalOpen] = useState(false);
   const [tempColumns, setTempColumns] = useState(columns);
   const [visibleColumns, setVisibleColumns] = useState([]);
+
+  // Get filtered tasks from the store
+  const filteredTasks = getFilteredTasks();
 
   // Initialize sensors for drag and drop
   const sensors = useSensors(
@@ -86,19 +93,14 @@ const TableView = () => {
   );
 
   useEffect(() => {
-    filterTasks();
-  }, [searchQuery, selectedStatus, tasks]);
-
-  useEffect(() => {
     // Update visible columns when tempColumns changes
     const visible = tempColumns.filter(col => col.visible);
     setVisibleColumns(visible);
   }, [tempColumns]);
 
   const handleSearch = (event) => {
-    const query = event.target.value.toLowerCase();
-    setSearchQuery(query);
-  }
+    setSearchQuery(event.target.value);
+  };
 
   const handleFilterStatus = (event) => {
     setSelectedStatus(event.target.value);
@@ -112,28 +114,6 @@ const TableView = () => {
   const handleCloseDrawer = () => {
     setOpenDrawer(false);
     setSelectedTask(null);
-  };
-
-  const filterTasks = () => {
-    let filtered = tasks;
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter((task) => {
-        return (
-          task.name.toLowerCase().includes(searchQuery) ||
-          task.description.toLowerCase().includes(searchQuery) ||
-          task.assignee.toLowerCase().includes(searchQuery)
-        );
-      });
-    }
-
-    // Status filter
-    if (selectedStatus && selectedStatus !== 'All') {
-      filtered = filtered.filter((task) => task.status === selectedStatus);
-    }
-
-    setFilteredTasks(filtered);
   };
 
   const toggleColumnVisibility = (key) => {
