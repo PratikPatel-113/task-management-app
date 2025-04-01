@@ -35,7 +35,7 @@ const tasks = [
 ];
 
 // Generate more tasks dynamically till id 50
-for (let i = 21; i <= 500; i++) {
+for (let i = 21; i <= 50; i++) {
     tasks.push({
         id: i,
         name: `Task ${i}`,
