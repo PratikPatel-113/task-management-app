@@ -2,6 +2,22 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Getting Started
+
+To get started with this project, follow these steps:
+
+1. Clone the repository:
+  ```bash
+  git clone <repository-url>
+  ```
+2. Navigate into the project directory:
+  ```bash
+   cd <project-name>
+  ```
+3. Install dependencies:
+  ```bash
+   npm install
+  ```
 ## Available Scripts
 
 In the project directory, you can run:
